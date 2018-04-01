@@ -42,7 +42,7 @@ class ParsingInterrupted(Exception):
 
 class _DictSAXHandler(object):
     def __init__(self,
-                 item_depth=0,
+                 item_depth=None,
                  item_callback=lambda *args: True,
                  xml_attribs=True,
                  attr_prefix='@',
@@ -102,7 +102,7 @@ class _DictSAXHandler(object):
             attrs['xmlns'] = self.namespace_declarations
             self.namespace_declarations = OrderedDict()
         self.path.append((name, attrs or None))
-        if len(self.path) > self.item_depth:
+        if len(self.path) > (self.item_depth or 0):
             self.stack.append((self.item, self.data))
             if self.xml_attribs:
                 attr_entries = []
@@ -122,7 +122,7 @@ class _DictSAXHandler(object):
 
     def endElement(self, full_name):
         name = self._build_name(full_name)
-        if len(self.path) == self.item_depth:
+        if self.item_depth is None or len(self.path) == self.item_depth:
             item = self.item
             if item is None:
                 item = (None if not self.data
